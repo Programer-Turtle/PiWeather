@@ -1,11 +1,12 @@
-import Weather
+import NWS
 import os
-import smbus
 import time
 from time import sleep, strftime
 from datetime import datetime, timedelta
 from LCD1602 import CharLCD1602
 lcd1602 = CharLCD1602()
+
+NWS.InitiateAPI("PiWeatherSation", "email here")
 
 #Put your latitude and longitude
 latitude = "38.89355704224317"
@@ -18,13 +19,24 @@ def GetWeatherData():
     global lastRecordedTime 
     lastRecordedTime = datetime.now()
     print("GotWeather")
-    return Weather.GetWeather(latitude, longitude)
+    return NWS.GetCurrentForecast(latitude, longitude)
 
 def GetAlertData():
     global lastRecordedAlertTime
     lastRecordedAlertTime = datetime.now()
     print("GotAlerts")
-    return Weather.GetWeatherAlerts(latitude, longitude)
+    alertData = NWS.GetWeatherAlerts(latitude, longitude)
+    alerts = []
+    for alert in alertData:
+        alerts.append({
+            'event':alertData['properties']['event'],
+            'headline':alertData['properties']['headline'],
+            'description':alertData['properties']['description'],
+            'severity':alertData['properties']['severity'],
+            'instruction':alertData['properties']['instruction'],
+            'urgency':alertData['properties']['urgency']
+                })
+    return alerts
 
 
 def CheckIfTimePassed():
@@ -39,11 +51,18 @@ def Main():
 
 
     while True:
-        TopweatherString = WeatherData["Temperature"]
+        TopweatherString = f"NWS   {WeatherData['temperature']}{WeatherData['temperatureUnit']}"
         AlertString = ""
-        if(Alerts != "None"):
-            AlertString = " ".join(Alerts)
-        BottomWeatherString = f"{WeatherData['Condition']} {AlertString}                "
+        if(Alerts != None):
+            ListOfStrings = []
+            for alert in Alerts:
+                CurrentAddedAlertString = f"{alert['event']} {alert['description']} Severity is {alert['severity']}"
+                if(alert['instruction'] != 'None'):
+                    CurrentAddedAlertString+= f" {alert['instruction']}"
+                ListOfStrings.append(f"{alert['event']} ")
+            AlertString = "   ".join(ListOfStrings)
+
+        BottomWeatherString = f"                {WeatherData['shortForecast']} {AlertString}"
         lcd1602.init_lcd()
         for i in range(0, len(BottomWeatherString)):
             lcd1602.clear()
