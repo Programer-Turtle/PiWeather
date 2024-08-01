@@ -19,7 +19,11 @@ def GetWeatherData():
     global lastRecordedTime 
     lastRecordedTime = datetime.now()
     print("GotWeather")
-    return NWS.GetCurrentForecast(latitude, longitude)
+    weatherData = NWS.GetCurrentForecast(latitude, longitude)
+    if(not 'shortForecast' in weatherData.keys()):
+        time.sleep(3)
+        weatherData = GetWeatherData()
+    return weatherData
 
 def GetAlertData():
     global lastRecordedAlertTime
@@ -29,12 +33,12 @@ def GetAlertData():
     alerts = []
     for alert in alertData:
         alerts.append({
-            'event':alertData['properties']['event'],
-            'headline':alertData['properties']['headline'],
-            'description':alertData['properties']['description'],
-            'severity':alertData['properties']['severity'],
-            'instruction':alertData['properties']['instruction'],
-            'urgency':alertData['properties']['urgency']
+            'event':alertData[alert]['properties']['event'],
+            'headline':alertData[alert]['properties']['headline'],
+            'description':alertData[alert]['properties']['description'],
+            'severity':alertData[alert]['properties']['severity'],
+            'instruction':alertData[alert]['properties']['instruction'],
+            'urgency':alertData[alert]['properties']['urgency']
                 })
     return alerts
 
@@ -73,3 +77,5 @@ def Main():
             WeatherData = GetWeatherData()
         if(CheckIfAlertTimePassed() == True):
             Alerts = GetAlertData() 
+
+Main()
