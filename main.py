@@ -63,7 +63,7 @@ def Main():
                 CurrentAddedAlertString = f"{alert['event']} {alert['description']} Severity is {alert['severity']}"
                 if(alert['instruction'] != 'None'):
                     CurrentAddedAlertString+= f" {alert['instruction']}"
-                ListOfStrings.append(f"{alert['event']} ")
+                ListOfStrings.append(CurrentAddedAlertString)
             AlertString = "   ".join(ListOfStrings)
 
         BottomWeatherString = f"                {WeatherData['shortForecast']} {AlertString}"
